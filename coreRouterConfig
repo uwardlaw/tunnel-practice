@@ -1,0 +1,146 @@
+firewall {
+    all-ping enable
+    broadcast-ping disable
+    config-trap disable
+    ipv6-receive-redirects disable
+    ipv6-src-route disable
+    ip-src-route disable
+    log-martians enable
+    name test-redirector {
+        default-action drop
+        enable-default-log
+        rule 1 {
+            action drop
+            destination {
+                address 192.168.3.2
+            }
+            protocol all
+            source {
+                address 192.168.1.2
+            }
+        }
+    }
+    receive-redirects disable
+    send-redirects enable
+    source-validation disable
+    syn-cookies enable
+    twa-hazards-protection disable
+}
+interfaces {
+    ethernet eth0 {
+        address 192.168.1.1/24
+        description blue
+        hw-id 08:00:27:d5:16:a3
+    }
+    ethernet eth1 {
+        address 192.168.2.1/24
+        description gray
+        hw-id 08:00:27:10:87:60
+    }
+    ethernet eth2 {
+        address 192.168.3.1/30
+        description p2p
+        hw-id 08:00:27:d9:a6:72
+    }
+    ethernet eth3 {
+        address dhcp
+        description "Connection to host"
+        hw-id 08:00:27:61:3a:0b
+    }
+    loopback lo {
+    }
+}
+protocols {
+    ospf {
+        area 0 {
+            network 192.168.3.0/30
+        }
+        area 1 {
+            network 192.168.1.0/24
+        }
+        area 2 {
+            network 192.168.2.0/24
+        }
+        neighbor 192.168.3.2 {
+            poll-interval 60
+            priority 0
+        }
+        parameters {
+            abr-type cisco
+            router-id 1.1.1.1
+        }
+    }
+}
+service {
+    dhcp-server {
+        listen-address 192.168.1.1
+        listen-address 192.168.2.1
+        shared-network-name blue {
+            authoritative
+            description blue
+            subnet 192.168.1.0/24 {
+                default-router 192.168.1.1
+                range blue {
+                    start 192.168.1.2
+                    stop 192.168.1.254
+                }
+            }
+        }
+        shared-network-name gray {
+            authoritative
+            description gray
+            subnet 192.168.2.0/24 {
+                default-router 192.168.2.1
+                range gray {
+                    start 192.168.2.2
+                    stop 192.168.2.254
+                }
+            }
+        }
+    }
+    ssh {
+        port 22
+    }
+}
+system {
+    config-management {
+        commit-revisions 100
+    }
+    console {
+        device ttyS0 {
+            speed 115200
+        }
+    }
+    host-name core-router
+    login {
+        user vyos {
+            authentication {
+                encrypted-password $6$.HSg6S8Kv7RXM$O5KAV7CpDj6GL/LQLQzUBP3sZQoxBT/y1G2wJVuBzeCLEAZ2N7UKVcGCMw0rQph2SfUiqaWJ4xl0Fep1E4fx9.
+                plaintext-password ""
+            }
+        }
+    }
+    ntp {
+        server 0.pool.ntp.org {
+        }
+        server 1.pool.ntp.org {
+        }
+        server 2.pool.ntp.org {
+        }
+    }
+    syslog {
+        global {
+            facility all {
+                level info
+            }
+            facility protocols {
+                level debug
+            }
+        }
+    }
+}
+
+
+// Warning: Do not remove the following line.
+// vyos-config-version: "broadcast-relay@1:cluster@1:config-management@1:conntrack@2:conntrack-sync@1:dhcp-relay@2:dhcp-server@5:dhcpv6-server@1:dns-forwarding@3:firewall@5:https@2:interfaces@18:ipoe-server@1:ipsec@5:l2tp@3:lldp@1:mdns@1:nat@5:ntp@1:pppoe-server@5:pptp@2:qos@1:quagga@7:rpki@1:salt@1:snmp@2:ssh@2:sstp@3:system@20:vrrp@2:vyos-accel-ppp@2:wanloadbalance@3:webproxy@2:zone-policy@1"
+// Release version: 1.3-beta-202105271929

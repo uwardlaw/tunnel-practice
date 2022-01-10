@@ -1,0 +1,124 @@
+interfaces {
+    ethernet eth0 {
+        address dhcp
+        description "Connection to host"
+        hw-id 08:00:27:68:2d:41
+    }
+    ethernet eth1 {
+        address 192.168.3.2/30
+        description p2p
+        hw-id 08:00:27:87:7c:c8
+    }
+    ethernet eth2 {
+        address 192.168.4.1/24
+        description red
+        hw-id 08:00:27:a9:5f:f8
+    }
+    loopback lo {
+    }
+}
+nat {
+    destination {
+        rule 10 {
+            destination {
+            }
+            inbound-interface eth1
+            protocol tcp_udp
+            translation {
+                address 192.168.4.10
+            }
+        }
+    }
+    source {
+        rule 10 {
+            outbound-interface eth1
+            translation {
+                address masquerade
+            }
+        }
+    }
+}
+protocols {
+    ospf {
+        area 0 {
+            network 192.168.3.0/30
+        }
+        neighbor 192.168.3.1 {
+            poll-interval 60
+            priority 0
+        }
+        parameters {
+            abr-type cisco
+            router-id 2.2.2.2
+        }
+    }
+}
+service {
+    dhcp-server {
+        listen-address 192.168.4.1
+        shared-network-name red {
+            authoritative
+            description red
+            subnet 192.168.4.0/24 {
+                default-router 192.168.4.1
+                range red {
+                    start 192.168.4.100
+                    stop 192.168.4.254
+                }
+                static-mapping target1 {
+                    ip-address 192.168.4.10
+                    mac-address 08:00:27:f0:38:58
+                }
+                static-mapping target2 {
+                    ip-address 192.168.4.20
+                    mac-address 08:00:27:f4:5e:68
+                }
+            }
+        }
+    }
+    ssh {
+        port 22
+    }
+}
+system {
+    config-management {
+        commit-revisions 100
+    }
+    console {
+        device ttyS0 {
+            speed 115200
+        }
+    }
+    host-name target-router
+    login {
+        user vyos {
+            authentication {
+                encrypted-password $6$tuyL2HYP$6YIY1MW1YLszPmUR67dSw.PpGin7Adpi/ko9Hf.bU7OiiWzl6R/Dvo7L2Cy6O9t/KRs7Gcf2ZHEyyTm3TGpnh/
+                plaintext-password ""
+            }
+        }
+    }
+    ntp {
+        server 0.pool.ntp.org {
+        }
+        server 1.pool.ntp.org {
+        }
+        server 2.pool.ntp.org {
+        }
+    }
+    syslog {
+        global {
+            facility all {
+                level info
+            }
+            facility protocols {
+                level debug
+            }
+        }
+    }
+}
+
+
+// Warning: Do not remove the following line.
+// vyos-config-version: "broadcast-relay@1:cluster@1:config-management@1:conntrack@2:conntrack-sync@1:dhcp-relay@2:dhcp-server@5:dhcpv6-server@1:dns-forwarding@3:firewall@5:https@2:interfaces@18:ipoe-server@1:ipsec@5:l2tp@3:lldp@1:mdns@1:nat@5:ntp@1:pppoe-server@5:pptp@2:qos@1:quagga@7:rpki@1:salt@1:snmp@2:ssh@2:sstp@3:system@20:vrrp@2:vyos-accel-ppp@2:wanloadbalance@3:webproxy@2:zone-policy@1"
+// Release version: 1.3-beta-202105271929
