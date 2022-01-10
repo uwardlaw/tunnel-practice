@@ -1,3 +1,3 @@
 # tunnel-practice
 
-![](network.drawio.svg)
+![](network.svg)
